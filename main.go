@@ -9,23 +9,22 @@ import (
 	"os/signal"
 	"regexp"
 	"runtime"
+	"strings"
 	"syscall"
 
 	"github.com/spf13/cobra"
 )
 
 func overrideCmd() *cobra.Command {
-	var hosts []string
-	var values []string
-
 	rootCmd := &cobra.Command{
 		Use:   "hosts-override",
 		Short: "Override hosts file entries for the life of the process",
 		Run: func(cmd *cobra.Command, args []string) {
+			hosts, values := parseArgs(&args)
 			hostsFileLocation := hostsFileLocation()
 			createHostsBackup(hostsFileLocation)
 			removeOverrides(hostsFileLocation) // Fixes unclean shutdown
-			parsedOverrides := parsedOverrides(&hosts, &values)
+			parsedOverrides := parsedOverrides(hosts, values)
 			parsedOverridesAsHosts := parsedOverridesAsHosts(parsedOverrides)
 			appendOverrides(hostsFileLocation, parsedOverridesAsHosts)
 			waitUntilExit()
@@ -33,14 +32,24 @@ func overrideCmd() *cobra.Command {
 		},
 	}
 
-	rootCmd.Flags().StringSliceVarP(&hosts, "host", "0", []string{}, "Host name to override (can be multiple)")
-	rootCmd.Flags().StringSliceVarP(&values, "value", "1", []string{}, "IP or unresolved host name (can be multiple)")
-
 	return rootCmd
 }
 
 func main() {
 	overrideCmd().Execute()
+}
+
+func parseArgs(args *[]string) (*[]string, *[]string) {
+	var hosts []string
+	var values []string
+
+	for _, pair := range *args {
+		hv := strings.Split(pair, ",")
+		hosts = append(hosts, hv[0])
+		values = append(values, hv[1])
+	}
+
+	return &hosts, &values
 }
 
 func hostsFileLocation() *string {

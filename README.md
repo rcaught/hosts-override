@@ -20,17 +20,21 @@ $ unzip /tmp/hosts-override.zip -d /usr/local/bin
 ```
 $client = new-object System.Net.WebClient
 $client.DownloadFile("https://github.com/rcaught/hosts-override/releases/latest/download/windows.zip","C:\tmp\hosts-override.zip")
-# Then unzip the file and run the bin
+# Then unzip the file and run the bin as Administrator
 ```
 
 ## Usage (Mac / Linux)
 ```
-$ sudo hosts-override -0 myhost.com -1 127.0.0.1 # Override myhost.com to point to localhost
-$ sudo hosts-override -0 myhost.com -1 google.com # google.com will be resolved into an IP / set of IPs
-$ sudo hosts-override -0 myhost.com -1 127.0.0.1 -0 anotherhost.com -1 127.0.0.1 # Multiple hosts and values are supported
+$ # Override myhost.com to resolve to 127.0.0.1
+$ sudo hosts-override myhost.com,127.0.0.1
+$ # google.com will be resolved into an IP / set of IPs
+$ sudo hosts-override myhost.com,google.com
+$ # Multiple hosts and values are supported
+$ sudo hosts-override myhost.com,127.0.0.1 anotherhost.com,127.0.0.1
 ```
 
 ### Notes
 - `sudo` is required as the hosts file is owned by `root`
 - On exiting the program with an interupt (CTRL-c), the hosts file is cleaned of appended records
 - In the case of an unclean shutdown, the next invocation of `hosts-override` will clear the previous sessions records
+- IPv4 and IPv6 addresses supported

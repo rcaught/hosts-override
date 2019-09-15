@@ -1,4 +1,4 @@
-# hosts-override
+# hosts-override [![Build Status](https://travis-ci.org/rcaught/hosts-override.svg?branch=master)](https://travis-ci.org/rcaught/hosts-override)
 Override `hosts` file entries for the lifetime of the process
 
 ## Installation

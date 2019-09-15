@@ -18,8 +18,9 @@ $ unzip /tmp/hosts-override.zip -d /usr/local/bin
 ```
 ##### Windows
 ```
-$ curl -Ls https://github.com/rcaught/hosts-override/releases/latest/download/windows.zip > /tmp/hosts-override.zip
-$ unzip /tmp/hosts-override.zip -d /usr/local/bin
+$client = new-object System.Net.WebClient
+$client.DownloadFile("https://github.com/rcaught/hosts-override/releases/latest/download/windows.zip","C:\tmp\hosts-override.zip")
+# Then unzip the file and run the bin
 ```
 
 ## Usage (Mac / Linux)

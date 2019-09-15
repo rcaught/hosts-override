@@ -25,8 +25,10 @@ func overrideCmd() *cobra.Command {
 			createHostsBackup(hostsFileLocation)
 			removeOverrides(hostsFileLocation) // Fixes unclean shutdown
 			parsedOverrides := parsedOverrides(hosts, values)
-			parsedOverridesAsHosts := parsedOverridesAsHosts(parsedOverrides)
-			appendOverrides(hostsFileLocation, parsedOverridesAsHosts)
+			parsedOverridesForHosts := parsedOverridesForHosts(parsedOverrides)
+			appendOverrides(hostsFileLocation, parsedOverridesForHosts)
+			fmt.Println("\nAdding the following hosts file entries for the lifetime of this process:")
+			fmt.Println("\n" + *parsedOverridesAsHosts(parsedOverrides) + "\n")
 			waitUntilExit()
 			removeOverrides(hostsFileLocation)
 		},
@@ -108,9 +110,16 @@ func finishComment() string {
 	return wrappingComment("FINISH")
 }
 
-func parsedOverridesAsHosts(parsedOverrides *map[string][]string) *string {
+func parsedOverridesForHosts(parsedOverrides *map[string][]string) *string {
 	o := startComment()
+	o = o + *parsedOverridesAsHosts(parsedOverrides)
+	o = o + finishComment()
 
+	return &o
+}
+
+func parsedOverridesAsHosts(parsedOverrides *map[string][]string) *string {
+	var o string
 	for ip, hosts := range *parsedOverrides {
 		o = o + ip + " "
 		for _, host := range hosts {
@@ -119,8 +128,6 @@ func parsedOverridesAsHosts(parsedOverrides *map[string][]string) *string {
 
 		o = o + "\n"
 	}
-
-	o = o + finishComment()
 
 	return &o
 }

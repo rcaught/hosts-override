@@ -26,7 +26,7 @@ $ unzip /tmp/hosts-override.zip -d /usr/local/bin
 ```
 $ sudo hosts-override -0 myhost.com -1 127.0.0.1 # Override myhost.com to point to localhost
 $ sudo hosts-override -0 myhost.com -1 google.com # google.com will be resolved into an IP / set of IPs
-$ sudo hosts-override -o myhost.com -1 127.0.0.1 -0 anotherhost.com -1 127.0.0.1 # Multiple hosts and values are supported
+$ sudo hosts-override -0 myhost.com -1 127.0.0.1 -0 anotherhost.com -1 127.0.0.1 # Multiple hosts and values are supported
 ```
 
 ### Notes

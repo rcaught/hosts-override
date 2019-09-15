@@ -7,8 +7,8 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"regexp"
 	"runtime"
-	"strings"
 	"syscall"
 
 	"github.com/spf13/cobra"
@@ -24,11 +24,12 @@ func overrideCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			hostsFileLocation := hostsFileLocation()
 			createHostsBackup(hostsFileLocation)
+			removeOverrides(hostsFileLocation) // Fixes unclean shutdown
 			parsedOverrides := parsedOverrides(&hosts, &values)
 			parsedOverridesAsHosts := parsedOverridesAsHosts(parsedOverrides)
 			appendOverrides(hostsFileLocation, parsedOverridesAsHosts)
 			waitUntilExit()
-			removeOverrides(hostsFileLocation, parsedOverridesAsHosts)
+			removeOverrides(hostsFileLocation)
 		},
 	}
 
@@ -68,7 +69,7 @@ func appendOverrides(hostsFileLocation *string, parsedOverridesAsHosts *string) 
 	}
 }
 
-func removeOverrides(hostsFileLocation *string, parsedOverridesAsHosts *string) {
+func removeOverrides(hostsFileLocation *string) {
 	contents, err := ioutil.ReadFile(*hostsFileLocation)
 
 	if err != nil {
@@ -76,17 +77,22 @@ func removeOverrides(hostsFileLocation *string, parsedOverridesAsHosts *string) 
 		return
 	}
 
-	removedOverrides := strings.Replace(string(contents), *parsedOverridesAsHosts, "", 1)
+	re := regexp.MustCompile("(?s)(" + wrappingComment("START") + ").*(" + wrappingComment("FINISH") + ")")
+	removedOverrides := re.ReplaceAll(contents, []byte(""))
 
-	if err := ioutil.WriteFile(*hostsFileLocation, []byte(removedOverrides), 0); err != nil {
+	if err := ioutil.WriteFile(*hostsFileLocation, removedOverrides, 0); err != nil {
 		log.Println(err)
 	}
 }
 
+func wrappingComment(custom string) string {
+	return "\n\n#########################\n" +
+		"# hosts-override " + custom +
+		"\n#########################\n\n"
+}
+
 func parsedOverridesAsHosts(parsedOverrides *map[string][]string) *string {
-	o := "\n\n#########################\n" +
-		"# hosts-override START  #\n" +
-		"#########################\n\n"
+	o := wrappingComment("START")
 
 	for ip, hosts := range *parsedOverrides {
 		o = o + ip + " "
@@ -97,9 +103,7 @@ func parsedOverridesAsHosts(parsedOverrides *map[string][]string) *string {
 		o = o + "\n"
 	}
 
-	o = o + "\n#########################\n" +
-		"# hosts-override FINISH #\n" +
-		"#########################\n"
+	o = o + wrappingComment("FINISH")
 
 	return &o
 }

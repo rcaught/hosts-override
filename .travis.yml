@@ -4,6 +4,7 @@ go:
 install:
 - go get -t -v ./...
 - go build -v ./...
+- GOOS=windows go get -u github.com/spf13/cobra
 before_deploy:
 - mkdir -p releases/linux
 - mkdir -p releases/darwin

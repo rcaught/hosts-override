@@ -77,7 +77,7 @@ func removeOverrides(hostsFileLocation *string) {
 		return
 	}
 
-	re := regexp.MustCompile("(?s)(" + wrappingComment("START") + ").*(" + wrappingComment("FINISH") + ")")
+	re := regexp.MustCompile("(?s)(" + startComment() + ").*(" + finishComment() + ")")
 	removedOverrides := re.ReplaceAll(contents, []byte(""))
 
 	if err := ioutil.WriteFile(*hostsFileLocation, removedOverrides, 0); err != nil {
@@ -91,8 +91,16 @@ func wrappingComment(custom string) string {
 		"\n#########################\n\n"
 }
 
+func startComment() string {
+	return wrappingComment("START")
+}
+
+func finishComment() string {
+	return wrappingComment("FINISH")
+}
+
 func parsedOverridesAsHosts(parsedOverrides *map[string][]string) *string {
-	o := wrappingComment("START")
+	o := startComment()
 
 	for ip, hosts := range *parsedOverrides {
 		o = o + ip + " "
@@ -103,7 +111,7 @@ func parsedOverridesAsHosts(parsedOverrides *map[string][]string) *string {
 		o = o + "\n"
 	}
 
-	o = o + wrappingComment("FINISH")
+	o = o + finishComment()
 
 	return &o
 }

@@ -9,8 +9,10 @@ import (
 	"os/signal"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -139,7 +141,7 @@ func createHostsBackup(hostsFileLocation *string) {
 		return
 	}
 
-	backupLocation := *hostsFileLocation + ".backup"
+	backupLocation := *hostsFileLocation + ".backup-" + strconv.FormatInt(time.Now().Unix(), 10)
 
 	err = ioutil.WriteFile(backupLocation, input, 0644)
 	if err != nil {

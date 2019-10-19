@@ -19,8 +19,8 @@ import (
 
 func overrideCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:   "hosts-override",
-		Short: "Override hosts file entries for the life of the process",
+		Use:   "hosts-override [(IP|HOST_NAME),IP...]",
+		Short: "Override hosts file entries for the lifetime of the process",
 		Run: func(cmd *cobra.Command, args []string) {
 			hosts, values := parseArgs(&args)
 			hostsFileLocation := hostsFileLocation()

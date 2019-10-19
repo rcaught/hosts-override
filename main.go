@@ -18,6 +18,9 @@ import (
 )
 
 func overrideCmd() *cobra.Command {
+	var refresh bool
+	var refreshInterval time.Duration
+
 	rootCmd := &cobra.Command{
 		Use:   "hosts-override [(IP|HOST_NAME),IP...]",
 		Short: "Override hosts file entries for the lifetime of the process",
@@ -27,21 +30,48 @@ func overrideCmd() *cobra.Command {
 			hostsFileLocation := hostsFileLocation()
 			createHostsBackup(hostsFileLocation)
 			removeOverrides(hostsFileLocation) // Fixes unclean shutdown
-			parsedOverrides := parsedOverrides(hosts, values)
-			parsedOverridesForHosts := parsedOverridesForHosts(parsedOverrides)
-			appendOverrides(hostsFileLocation, parsedOverridesForHosts)
-			fmt.Println("\nAdding the following hosts file entries for the lifetime of this process:")
-			fmt.Println("\n" + *parsedOverridesAsHosts(parsedOverrides) + "\n")
+
+			fmt.Println("\nOverriding hosts file entries for the lifetime of the process:")
+			parseAndAppend(hosts, values, hostsFileLocation, &refresh, &refreshInterval)
+
+			if refresh == true {
+				refreshTicker := time.NewTicker(refreshInterval)
+
+				go func() {
+					for {
+						select {
+						case <-refreshTicker.C:
+							removeOverrides(hostsFileLocation)
+							parseAndAppend(hosts, values, hostsFileLocation, &refresh, &refreshInterval)
+						}
+					}
+				}()
+			}
+
 			waitUntilExit()
 			removeOverrides(hostsFileLocation)
 		},
 	}
+
+	rootCmd.Flags().BoolVarP(&refresh, "refresh", "r", false, "Refresh unresolved hosts")
+	rootCmd.Flags().DurationVarP(&refreshInterval, "refresh-interval", "i", time.Duration(300)*time.Second, "Refresh Interval")
 
 	return rootCmd
 }
 
 func main() {
 	overrideCmd().Execute()
+}
+
+func parseAndAppend(hosts *[]string, values *[]string, hostsFileLocation *string, refresh *bool, refreshInterval *time.Duration) {
+	parsedOverrides := parsedOverrides(hosts, values)
+	parsedOverridesForHosts := parsedOverridesForHosts(parsedOverrides)
+	appendOverrides(hostsFileLocation, parsedOverridesForHosts)
+	if *refresh == true {
+		fmt.Println("\n(Refreshing in " + refreshInterval.String() + ")...")
+	}
+	fmt.Println("\n" + *parsedOverridesAsHosts(parsedOverrides) + "\n")
+	fmt.Println("\nPress CTRL-C to exit")
 }
 
 func parseArgs(args *[]string) (*[]string, *[]string) {
@@ -209,6 +239,5 @@ func waitUntilExit() {
 		done <- true
 	}()
 
-	fmt.Println("\nPress CTRL-C to exit")
 	<-done
 }

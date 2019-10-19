@@ -9,9 +9,9 @@ before_deploy:
 - mkdir -p releases/linux
 - mkdir -p releases/darwin
 - mkdir -p releases/windows
-- GOOS=linux GOARCH=386 go build -o releases/linux/hosts-override github.com/rcaught/hosts-override
+- GOOS=linux GOARCH=amd64 go build -o releases/linux/hosts-override github.com/rcaught/hosts-override
 - GOOS=darwin GOARCH=amd64 go build -o releases/darwin/hosts-override github.com/rcaught/hosts-override
-- GOOS=windows GOARCH=386 go build -o releases/windows/hosts-override github.com/rcaught/hosts-override
+- GOOS=windows GOARCH=amd64 go build -o releases/windows/hosts-override github.com/rcaught/hosts-override
 - cd releases/linux
 - chmod +x hosts-override
 - zip linux.zip hosts-override

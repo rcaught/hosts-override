@@ -2,7 +2,7 @@ language: go
 go:
 - '1.13'
 install:
-- go get -t -v ./...
+- go mod tidy
 - go build -v ./...
 - GOOS=windows go get -u github.com/spf13/cobra
 before_deploy:

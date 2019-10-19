@@ -31,6 +31,8 @@ $ # google.com will be resolved into an IP / set of IPs
 $ sudo hosts-override myhost.com,google.com
 $ # Multiple hosts and values are supported
 $ sudo hosts-override myhost.com,127.0.0.1 anotherhost.com,127.0.0.1
+$ # Refresh of unresolved hosts (with custom interval)
+$ sudo hosts-override -r -i=1m myhost.com,127.0.0.1
 ```
 
 ### Notes

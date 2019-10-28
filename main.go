@@ -82,7 +82,7 @@ func clearScreen() {
 	parsedOverridesForHosts := parsedOverridesForHosts(parsedOverrides)
 	appendOverrides(hostsFileLocation, parsedOverridesForHosts)
 	if *refresh == true {
-		fmt.Println("\n(Refreshing in " + refreshInterval.String() + ")...")
+		fmt.Println("\n(Refreshing every " + refreshInterval.String() + ")...")
 	}
 	fmt.Println("\n" + *parsedOverridesAsHosts(parsedOverrides) + "\n")
 	fmt.Println("\nPress CTRL-C to exit")

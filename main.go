@@ -18,6 +18,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type hostsFileEntry struct {
+	hostname       *string
+	ip             *string
+	ipResovledFrom *string
+}
+
+type hostsFileEntries []*hostsFileEntry
+
 func overrideCmd() *cobra.Command {
 	var refresh bool
 	var refreshInterval time.Duration
@@ -27,15 +35,14 @@ func overrideCmd() *cobra.Command {
 		Short: "Override hosts file entries for the lifetime of the process",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			hosts, values := parseArgs(&args)
+			clearScreen()
+			entries := parseArgs(&args)
 			hostsFileLocation := hostsFileLocation()
 			createHostsBackup(hostsFileLocation)
 			removeOverrides(hostsFileLocation) // Fixes unclean shutdown
+			parseAndAppend(entries, hostsFileLocation, &refresh, &refreshInterval)
 
-			fmt.Println("\nOverriding hosts file entries for the lifetime of the process:")
-			parseAndAppend(hosts, values, hostsFileLocation, &refresh, &refreshInterval)
-
-			if refresh == true {
+			if refresh {
 				refreshTicker := time.NewTicker(refreshInterval)
 
 				go func() {
@@ -43,7 +50,8 @@ func overrideCmd() *cobra.Command {
 						select {
 						case <-refreshTicker.C:
 							removeOverrides(hostsFileLocation)
-							parseAndAppend(hosts, values, hostsFileLocation, &refresh, &refreshInterval)
+							clearScreen()
+							parseAndAppend(entries, hostsFileLocation, &refresh, &refreshInterval)
 						}
 					}
 				}()
@@ -64,8 +72,6 @@ func main() {
 	overrideCmd().Execute()
 }
 
-func parseAndAppend(hosts *[]string, values *[]string, hostsFileLocation *string, refresh *bool, refreshInterval *time.Duration) {
-	parsedOverrides := parsedOverrides(hosts, values)
 func clearScreen() {
 	var cmd *exec.Cmd
 
@@ -79,6 +85,15 @@ func clearScreen() {
 	cmd.Run()
 }
 
+func parseAndAppend(entries *hostsFileEntries, hostsFileLocation *string, refresh *bool, refreshInterval *time.Duration) {
+	fmt.Println("\nhosts-override: Overriding hosts file entries for the lifetime of the process")
+
+	parsedOverrides := parsedOverrides(entries, refresh)
+
+	if parsedOverrides == nil {
+		return
+	}
+
 	parsedOverridesForHosts := parsedOverridesForHosts(parsedOverrides)
 	appendOverrides(hostsFileLocation, parsedOverridesForHosts)
 	if *refresh == true {
@@ -88,17 +103,15 @@ func clearScreen() {
 	fmt.Println("\nPress CTRL-C to exit gracefully (hosts file will reset)")
 }
 
-func parseArgs(args *[]string) (*[]string, *[]string) {
-	var hosts []string
-	var values []string
+func parseArgs(args *[]string) *hostsFileEntries {
+	var entries hostsFileEntries
 
 	for _, pair := range *args {
 		hv := strings.Split(pair, ",")
-		hosts = append(hosts, hv[0])
-		values = append(values, hv[1])
+		entries = append(entries, &hostsFileEntry{&hv[0], &hv[1], nil})
 	}
 
-	return &hosts, &values
+	return &entries
 }
 
 func hostsFileLocation() *string {
@@ -157,23 +170,18 @@ func finishComment() string {
 	return wrappingComment("FINISH")
 }
 
-func parsedOverridesForHosts(parsedOverrides *map[string][]string) *string {
+func parsedOverridesForHosts(entries *hostsFileEntries) *string {
 	o := startComment()
-	o = o + *parsedOverridesAsHosts(parsedOverrides)
+	o = o + *parsedOverridesAsHosts(entries)
 	o = o + finishComment()
 
 	return &o
 }
 
-func parsedOverridesAsHosts(parsedOverrides *map[string][]string) *string {
+func parsedOverridesAsHosts(entries *hostsFileEntries) *string {
 	var o string
-	for ip, hosts := range *parsedOverrides {
-		o = o + ip + " "
-		for _, host := range hosts {
-			o = o + host + " "
-		}
-
-		o = o + "\n"
+	for _, entry := range *entries {
+		o = o + *entry.ip + " " + *entry.hostname + " # IP resolved from " + *entry.ipResovledFrom + "\n"
 	}
 
 	return &o
@@ -196,16 +204,14 @@ func createHostsBackup(hostsFileLocation *string) {
 	}
 }
 
-func parsedOverrides(hosts *[]string, values *[]string) *map[string][]string {
-	parsed := map[string][]string{}
+func parsedOverrides(entries *hostsFileEntries, refresh *bool) *hostsFileEntries {
+	expandedEntries := hostsFileEntries{}
 
-	for i, host := range *hosts {
-		value := (*values)[i]
-
-		if maybeIP := *maybeIP(&value); maybeIP != "" {
-			parsed[maybeIP] = append(parsed[maybeIP], host)
+	for _, entry := range *entries {
+		if maybeIP := *maybeIP(entry.ip); maybeIP != "" {
+			expandedEntries = append(expandedEntries, entry)
 		} else {
-			ips, err := net.LookupIP(value)
+			ips, err := net.LookupIP(*entry.ip)
 
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Could not get IPs: %v\n", err)
@@ -217,14 +223,15 @@ func parsedOverrides(hosts *[]string, values *[]string) *map[string][]string {
 
 			for _, ip := range ips {
 				ip := ip.String()
-
-				parsed[ip] = append(parsed[ip], host)
+				expandedEntries = append(
+					expandedEntries,
+					&hostsFileEntry{hostname: entry.hostname, ip: &ip, ipResovledFrom: entry.ip},
+				)
 			}
-
 		}
 	}
 
-	return &parsed
+	return &expandedEntries
 }
 
 func maybeIP(value *string) *string {

@@ -85,7 +85,7 @@ func clearScreen() {
 		fmt.Println("\n(Refreshing every " + refreshInterval.String() + ")...")
 	}
 	fmt.Println("\n" + *parsedOverridesAsHosts(parsedOverrides) + "\n")
-	fmt.Println("\nPress CTRL-C to exit")
+	fmt.Println("\nPress CTRL-C to exit gracefully (hosts file will reset)")
 }
 
 func parseArgs(args *[]string) (*[]string, *[]string) {

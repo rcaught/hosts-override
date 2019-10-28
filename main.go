@@ -209,6 +209,9 @@ func parsedOverrides(hosts *[]string, values *[]string) *map[string][]string {
 
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Could not get IPs: %v\n", err)
+				if *refresh {
+					return nil
+				}
 				os.Exit(1)
 			}
 

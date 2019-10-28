@@ -22,7 +22,7 @@ func overrideCmd() *cobra.Command {
 	var refreshInterval time.Duration
 
 	rootCmd := &cobra.Command{
-		Use:   "hosts-override [(IP|HOST_NAME),IP...]",
+		Use:   "hosts-override [HOST_NAME,(IP|RESOLVABLE_HOST_NAME)...]",
 		Short: "Override hosts file entries for the lifetime of the process",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {

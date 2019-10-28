@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/exec"
 	"os/signal"
 	"regexp"
 	"runtime"
@@ -65,6 +66,19 @@ func main() {
 
 func parseAndAppend(hosts *[]string, values *[]string, hostsFileLocation *string, refresh *bool, refreshInterval *time.Duration) {
 	parsedOverrides := parsedOverrides(hosts, values)
+func clearScreen() {
+	var cmd *exec.Cmd
+
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("cmd", "/c", "cls")
+	} else {
+		cmd = exec.Command("clear")
+	}
+
+	cmd.Stdout = os.Stdout
+	cmd.Run()
+}
+
 	parsedOverridesForHosts := parsedOverridesForHosts(parsedOverrides)
 	appendOverrides(hostsFileLocation, parsedOverridesForHosts)
 	if *refresh == true {

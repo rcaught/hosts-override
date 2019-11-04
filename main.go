@@ -84,13 +84,20 @@ func parseOverrides(entries *hostsFileEntries, continueOnError bool) *hostsFileE
 		if maybeIP := *maybeIP(entry.ip); maybeIP != "" {
 			expandedEntries = append(expandedEntries, entry)
 		} else {
+			// NOTE: Try to resolve google.com, but this could be any domain to test
+			//       if there is an Internet connection and hosts are resolvable.
+			//
+			//       Can't use user provided domains, as they can already be in the
+			//       hosts file and will provide a false positive.
+			_, googleErr := net.LookupIP("google.com")
 			ips, err := net.LookupIP(*entry.ip)
 
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Could not get IPs: %v\n", err)
+			if googleErr != nil || err != nil {
 				if continueOnError {
 					return nil
 				}
+
+				fmt.Fprintf(os.Stderr, "Could not get IPs: %v\n", err)
 				os.Exit(1)
 			}
 

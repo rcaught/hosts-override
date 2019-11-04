@@ -40,7 +40,7 @@ func overrideCmd() *cobra.Command {
 						case <-refreshTicker.C:
 							expandedEntries := parseOverrides(entries, true)
 
-							if entries != nil {
+							if expandedEntries != nil {
 								removeOverrides(file)
 								clearScreen()
 								appendOverrides(file, expandedEntries)
@@ -78,8 +78,6 @@ func parseArgs(args *[]string) *hostsFileEntries {
 }
 
 func parseOverrides(entries *hostsFileEntries, continueOnError bool) *hostsFileEntries {
-	fmt.Println("\nhosts-override: Overriding hosts file entries for the lifetime of the process")
-
 	expandedEntries := hostsFileEntries{}
 
 	for _, entry := range *entries {
@@ -140,6 +138,8 @@ func removeOverrides(hostsFileLocation *string) {
 }
 
 func displayStatus(refresh *bool, refreshInterval time.Duration, entries *hostsFileEntries) {
+	fmt.Println("\nhosts-override: Overriding hosts file entries for the lifetime of the process")
+
 	if *refresh == true {
 		fmt.Println("\n(Refreshing every " + refreshInterval.String() + ")...")
 	}

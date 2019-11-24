@@ -2,11 +2,12 @@
 Override `hosts` file entries for the lifetime of the process
 
 ## Installation
-##### Go
+
+##### MacOS (Homebrew via own tap)
 ```
-$ go get github.com/rcaught/hosts-override/...
+$ brew install rcaught/hosts-override/hosts-override
 ```
-##### MacOS
+##### MacOS (manually)
 ```
 $ curl -Ls https://github.com/rcaught/hosts-override/releases/latest/download/macos.zip > /tmp/hosts-override.zip
 $ unzip /tmp/hosts-override.zip -d /usr/local/bin
@@ -16,12 +17,9 @@ $ unzip /tmp/hosts-override.zip -d /usr/local/bin
 $ curl -Ls https://github.com/rcaught/hosts-override/releases/latest/download/linux.zip > /tmp/hosts-override.zip
 $ unzip /tmp/hosts-override.zip -d /usr/local/bin
 ```
-##### Windows
-```
-$client = new-object System.Net.WebClient
-$client.DownloadFile("https://github.com/rcaught/hosts-override/releases/latest/download/windows.zip","C:\tmp\hosts-override.zip")
-# Then unzip the file and run the bin as Administrator
-```
+##### Windows (untested)
+- Download https://github.com/rcaught/hosts-override/releases/latest/download/windows.zip
+- Unzip the file and run the bin as Administrator
 
 ## Usage (Mac / Linux)
 ```

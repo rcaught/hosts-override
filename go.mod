@@ -1,8 +1,5 @@
 module github.com/rcaught/hosts-override
 
-go 1.13
+go 1.15
 
-require (
-	github.com/spf13/cobra v0.0.5
-	github.com/spf13/pflag v1.0.5 // indirect
-)
+require github.com/spf13/cobra v1.1.1

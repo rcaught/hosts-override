@@ -119,6 +119,7 @@ func appendOverrides(hostsFileLocation *string, entries *hostsFileEntries) {
 
 	if err != nil {
 		log.Println(err)
+		os.Exit(1)
 	}
 
 	defer f.Close()

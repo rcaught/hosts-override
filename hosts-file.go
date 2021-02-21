@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"runtime"
 	"strconv"
 	"time"
@@ -20,7 +21,7 @@ func hostsFileLocation() *string {
 	var hostsFile string
 
 	if runtime.GOOS == "windows" {
-		hostsFile = "${SystemRoot}/System32/drivers/etc/hosts"
+		hostsFile = os.Getenv("SystemRoot") + "\\System32\\drivers\\etc\\hosts"
 	} else {
 		hostsFile = "/etc/hosts"
 	}

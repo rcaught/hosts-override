@@ -19,7 +19,6 @@ before_deploy:
 - chmod +x hosts-override
 - zip macos.zip hosts-override
 - cd ../windows
-- chmod +x hosts-override
 - zip windows.zip hosts-override
 - cd ../..
 deploy:

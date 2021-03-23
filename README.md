@@ -17,7 +17,7 @@ $ unzip /tmp/hosts-override.zip -d /usr/local/bin
 $ curl -Ls https://github.com/rcaught/hosts-override/releases/latest/download/linux.zip > /tmp/hosts-override.zip
 $ unzip /tmp/hosts-override.zip -d /usr/local/bin
 ```
-##### Windows (untested)
+##### Windows
 - Download https://github.com/rcaught/hosts-override/releases/latest/download/windows.zip
 - Unzip the file and run the exe as Administrator
 
